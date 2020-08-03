@@ -21,6 +21,9 @@ elif [[ -d /ioddev_dell ]]; then
 elif [[ -d /scratch1 ]] ; then
     . /apps/lmod/lmod/init/sh
     target=hera
+elif [[ -d /work/noaa ]]; then
+    . $MODULESHOME/init/sh
+    target=orion
 elif [[ -d /carddata ]] ; then
     . /opt/apps/lmod/3.1.9/init/sh
     target=s4
