@@ -17,15 +17,11 @@ module load impi
 #
 module load szip/2.1
 module load hdf5/1.8.9
-module load netcdf4/4.2.1.1
 
-#export COREPATH=/lfs3/projects/hfv3gfs/nwprod/lib
 export COREPATH=/lfs4/HFIP/hfv3gfs/gwv/l0530/lib
 export NCEPLIBS=$COREPATH
 module use $NCEPLIBS/modulefiles
 
-#export FFLAGS="-openmp"
-#export LDFLAGS="-openmp"
 export FFLAGS="-qopenmp"
 export LDFLAGS="-qopenmp"
 module load bacio-intel-sandybridge/2.0.2
@@ -39,10 +35,5 @@ module load sigio-intel-sandybridge/2.0.1
 module load sfcio-intel-sandybridge/1.0.0
 module load ip-intel-sandybridge/3.0.0
 
-#module use /home/George.Vandenberghe/t1/l1025/lib/modulefiles
-#module load hdf5
-#module load netcdf
 
 module load netcdfp/4.7.4
-#export NETCDF=${NETCDF4}
-#export NETCDF_DIR=${NETCDF4}
