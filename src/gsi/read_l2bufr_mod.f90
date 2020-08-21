@@ -66,11 +66,11 @@ module read_l2bufr_mod
   public :: range_max,del_time,l2superob_only,elev_angle_max,del_azimuth
   public :: minnum,del_range,del_elev
 
-  public :: invtllv,radar_sites,radar_box,radar_rmesh,radar_zmesh!Xu
+  public :: invtllv,radar_sites,radar_box,radar_rmesh,radar_zmesh
 
   integer(i_kind) minnum
-  real(r_kind) del_azimuth,del_elev,del_range,del_time,elev_angle_max,range_max,radar_rmesh,radar_zmesh !Xu
-  logical l2superob_only,radar_sites,radar_box !Xu
+  real(r_kind) del_azimuth,del_elev,del_range,del_time,elev_angle_max,range_max,radar_rmesh,radar_zmesh 
+  logical l2superob_only,radar_sites,radar_box 
 
 contains
 
@@ -106,10 +106,10 @@ contains
     minnum=50
     range_max=100000._r_kind    !  (100km)
     l2superob_only=.false.
-    radar_sites=.false. !Xu
-    radar_box=.false. !Xu
-    radar_rmesh=10 !Xu
-    radar_zmesh=500 !Xu
+    radar_sites=.false. 
+    radar_box=.false. 
+    radar_rmesh=10._r_kind 
+    radar_zmesh=500._r_kind 
   end subroutine initialize_superob_radar
 
   subroutine radar_bufr_read_all(npe,mype)
@@ -150,17 +150,17 @@ contains
     use qcmod, only: vadwnd_l2rw_qc
     use oneobmod, only: lsingleradar,singleradar
     use mpeu_util, only: IndexSet, IndexSort
-    use file_utility, only : get_lun  !Xu
-    use constants, only: pi,rearth_equator !Xu
-    use mpeu_util, only: gettablesize,gettable !Xu
-    use gridmod, only: regional,nlat,nlon,txy2ll !Xu
+    use file_utility, only : get_lun  
+    use constants, only: pi,rearth_equator 
+    use mpeu_util, only: gettablesize,gettable 
+    use gridmod, only: regional,nlat,nlon,txy2ll 
     use gsi_io, only: verbose
     implicit none
 
     integer(i_kind),intent(in):: npe,mype
 
     integer(i_kind),parameter:: max_num_radars=150
-    integer(i_kind),parameter:: maxobs=2e9 !Xu
+    integer(i_kind),parameter:: maxobs=2e8 
     integer(i_kind),parameter:: n_gates_max=4000
     real(r_kind),parameter:: four_thirds = 4.0_r_kind / 3.0_r_kind
     real(r_kind),parameter:: r8     = 8.0_r_kind
@@ -185,13 +185,13 @@ contains
     integer(i_kind) nsuper,nsuperall
     integer(i_kind) nthisrad,nthisbins
     integer(i_kind) idups,idups0
-    integer(i_kind) outbufr,radar_count,radar_true,ntot,luin_mrms,nlevz,iout,iiout,ntmp,icntpnt,nodata,zflag,ndata !Xu
-    real(r_kind) xmesh,rmesh,zmesh,dx,dy,dx1,dy1,w00,w01,w10,w11,zobs,crit1 !Xu
-    real(r_kind) halfpi,twopi,rkm2dg,delat,dgv,glatm,factor,delon,rlat_min,rlat_max,rlon_min,rlon_max,dlon_e,dlat_e,dlon_g,dlat_g,dlat_grid,dlon_grid !Xu
-    integer(i_kind) mlat,mlonx,mlonj,itxmax,ilev,ilat,ilon !Xu
-    integer(i_kind),allocatable,dimension(:):: mlon !Xu
-    real(r_kind),allocatable,dimension(:):: glat !Xu
-    real(r_kind),allocatable,dimension(:,:):: glon !Xu
+    integer(i_kind) outbufr,radar_count,radar_true,ntot,luin_mrms,nlevz,iout,iiout,ntmp,icntpnt,nodata,zflag,ndata 
+    real(r_kind) xmesh,rmesh,zmesh,dx,dy,dx1,dy1,w00,w01,w10,w11,zobs,crit1 
+    real(r_kind) halfpi,twopi,rkm2dg,delat,dgv,glatm,factor,delon,rlat_min,rlat_max,rlon_min,rlon_max,dlon_e,dlat_e,dlon_g,dlat_g,dlat_grid,dlon_grid 
+    integer(i_kind) mlat,mlonx,mlonj,itxmax,ilev,ilat,ilon 
+    integer(i_kind),allocatable,dimension(:):: mlon 
+    real(r_kind),allocatable,dimension(:):: glat 
+    real(r_kind),allocatable,dimension(:,:):: glon 
     integer(i_kind) nradials_in,nradials_fail_angmax,nradials_fail_time,nradials_fail_elb
     integer(i_kind) nradials_in1,nradials_fail_angmax1,nradials_fail_time1,nradials_fail_elb1
     integer(i_kind) nobs_in,nobs_badvr,nobs_badsr,nobs_lrbin,nobs_hrbin,nrange_max,irad
@@ -256,19 +256,18 @@ contains
     equivalence(master_stn_table(1),cmaster_stn_table)
     equivalence (chdr,hdr(1))
     equivalence (chdr2,hdr2(1))
-    character(len=*),parameter:: tbname='SUPEROB_RADAR::' !Xu
+    character(len=*),parameter:: tbname='SUPEROB_RADAR::' 
 
     logical rite,print_verbose
-    logical lradar,file_exists,luse !Xu
-    character(len=256),allocatable,dimension(:):: rtable !Xu
-    character(4),allocatable,dimension(:):: rsite !Xu
-    integer,allocatable,dimension(:):: ruse,isort !Xu
-    real(r_kind), allocatable, dimension(:) :: zl_thin !Xu
-    real(r_kind):: relm,srlm,crlm,sph,cph,cc,anum,denom !Xu
+    logical lradar,file_exists,luse 
+    character(len=256),allocatable,dimension(:):: rtable 
+    character(4),allocatable,dimension(:):: rsite 
+    integer,allocatable,dimension(:):: ruse,isort 
+    real(r_kind), allocatable, dimension(:) :: zl_thin 
+    real(r_kind):: relm,srlm,crlm,sph,cph,cc,anum,denom 
  
     print_verbose=.false.
     if(verbose) print_verbose=.true.
-!!!!!!!!!!!!!!!!!!!!!!! Xu !!!!!!!!!!!!!!!!!!!!
     if (radar_sites) then 
      open(666,file=trim('gsiparm.anl'),form='formatted')
      call gettablesize(tbname,666,ntot,radar_count)
@@ -279,7 +278,6 @@ contains
       if (mype==0) write(*,'(A10,X,A4,X,I)'),"Radar sites usage: ",rsite(i),ruse(i)
      end do 
     end if 
-!!!!!!!!!!!!!!!!!!!!!!! Xu !!!!!!!!!!!!!!!!!!!!
     ! define infile if using either option for radial winds.
     do i=1,ndat
        if(trim(dtype(i))=='rw'.and.trim(dsis(i))=='l2rw'.and.vadwnd_l2rw_qc)then
@@ -390,13 +388,13 @@ contains
           if(abs(t)>del_time) cycle
           nobs_in=nobs_in+n_gates
           stn_id=chdr2 
-          radar_true=0 !Xu
-          if (radar_sites) then !Xu
-           do i=1,radar_count !Xu
-             if (trim(stn_id) .eq. trim(rsite(i)) .and. ruse(i) .eq. 1 ) radar_true=1 !Xu
-           end do !Xu
-           if (radar_true == 0) cycle !Xu
-          end if !Xu
+          radar_true=0 
+          if (radar_sites) then 
+           do i=1,radar_count 
+             if (trim(stn_id) .eq. trim(rsite(i)) .and. ruse(i) .eq. 1 ) radar_true=1 
+           end do 
+           if (radar_true == 0) cycle 
+          end if 
           ibyte=index(cstn_id_table,stn_id)
           if(ibyte==0) then
              num_radars=num_radars+1
@@ -503,37 +501,11 @@ contains
     nrange_max=0
     nthisrad=nrbin*nazbin*nelbin
     nthisbins=6*nthisrad
-!!!!!!!!!!!!!!!!!!!!!!! Xu !!!!!!!!!!!!!!!!!!!!
     if (radar_box) then 
-!!!! Xu derived from satthin !!!!
      twopi  = two*pi
      rkm2dg = 360.0_r_kind/(twopi*rearth_equator)*1.e3_r_kind
-     rlat_min =  999.0_r_kind
-     rlat_max = -999.0_r_kind
-     rlon_min =  999.0_r_kind
-     rlon_max = -999.0_r_kind
-     do j=1,nlon
-       dlon_g=j
-       do i=1,nlat
-         dlat_g=i
-         call txy2ll(dlon_g,dlat_g,dlon_e,dlat_e)
-         dlat_e=dlat_e*rad2deg
-         dlon_e=dlon_e*rad2deg
-         if (dlon_e < zero) then
-            dlon_e = MOD(dlon_e,-r360) + r360
-         else if (dlon_e > r360) then
-            dlon_e = MOD(dlon_e,r360)
-         endif
-         rlat_min = min(rlat_min,dlat_e)
-         rlat_max = max(rlat_max,dlat_e)
-         rlon_min = min(rlon_min,dlon_e)
-         rlon_max = max(rlon_max,dlon_e)
-       end do
-     end do
-     dlat_grid = rlat_max - rlat_min
-     dlon_grid = rlon_max - rlon_min
-!!!! Xu derived from satthin !!!!
-!!!! Xu derived from make3grids !!!!
+     dlat_grid = 5.0_r_kind  
+     dlon_grid = 5.0_r_kind  
      halfpi = half*pi
      dx=radar_rmesh*rkm2dg
      dy=dx
@@ -542,32 +514,10 @@ contains
      delat=dlat_grid/mlat
      dgv=delat*half
      mlat=max(2,mlat);mlonx=max(2,mlonx)
-     allocate(mlon(mlat),glat(mlat),glon(mlonx,mlat))
-     itxmax=0
-     do j = 1,mlat
-       glat(j) = rlat_min + (j-1)*delat
-       glat(j) = glat(j)*deg2rad
-       glatm = glat(j) + dgv*deg2rad
-       factor = abs(cos(abs(glatm)))
-       mlonj   = nint(mlonx*factor)  
-       mlon(j) = max(2,mlonj)
-       delon = dlon_grid/mlon(j)
-       glat(j) = min(max(-halfpi,glat(j)),halfpi)
-       do i = 1,mlon(j)
-          glon(i,j) = rlon_min + (i-1)*delon
-          glon(i,j) = glon(i,j)*deg2rad
-          if (glon(i,j) > twopi) glon(i,j) = glon(i,j) - twopi
-          if (glon(i,j) < zero) glon(i,j) = glon(i,j) + twopi
-          glon(i,j) = min(max(zero,glon(i,j)),twopi)
-       enddo
-     end do
-!!!! Xu derived from make3grids end !!!!
      nlevz=nint(15000.0_r_kind/radar_zmesh)
-     nthisrad=(nlevz+1)*sum(mlon)
-     nthisbins=6*nthisrad!9*nthisrad
+     nthisrad=(nlevz+1)*mlat*mlonx
+     nthisbins=6*nthisrad
     end if
-!!!!!!!!!!!!!!!!!!!!!!! Xu !!!!!!!!!!!!!!!!!!!!
-
 ! reopen and reread the file for data this time
     call closbf(inbufr)
     open(inbufr,file=infile,form='unformatted')
@@ -621,15 +571,15 @@ contains
 	  end if
 	  stn_id=chdr 
 	  ibyte=index(cmaster_stn_table,stn_id)
-          if (radar_sites) then !Xu
-           radar_true=0 !Xu
-           do i=1,radar_count !Xu
-            if (trim(stn_id) == trim(rsite(i)) .and. ruse(i).eq.1) radar_true=1 !Xu
-           end do !Xu
-           if (radar_true == 0) then !Xu
-            cycle !Xu
-           end if !Xu
-          end if !Xu
+          if (radar_sites) then 
+           radar_true=0 
+           do i=1,radar_count 
+            if (trim(stn_id) == trim(rsite(i)) .and. ruse(i).eq.1) radar_true=1 
+           end do 
+           if (radar_true == 0) then 
+            cycle 
+           end if 
+          end if 
 	  if(ibyte==0) then
 	     write(6,*) ' index error in radar_bufr_read_all -- program stops -- ',ibyte,stn_id
 	     call stop2(99)
@@ -661,7 +611,7 @@ contains
 		nobs_hrbin=nobs_hrbin+1
 		cycle
 	     end if
-           if (.not.radar_box) then !Xu
+           if (.not.radar_box) then 
 	     iloc=nrbin*(nazbin*(ielbin-1)+(iazbin-1))+irbin
 	     bins(1,iloc,krad)=bins(1,iloc,krad)+range
 	     bins(2,iloc,krad)=bins(2,iloc,krad)+stn_az
@@ -670,7 +620,7 @@ contains
 	     bins(5,iloc,krad)=bins(5,iloc,krad)+rwnd(2,i)**2
 	     bins(6,iloc,krad)=bins(6,iloc,krad)+t
 	     ibins(iloc,krad)=ibins(iloc,krad)+1
-           else !Xu
+           else 
              this_stalat=master_lat_table(krad)
              if(abs(this_stalat)>r89_5) cycle
              this_stalon=master_lon_table(krad)
@@ -683,10 +633,20 @@ contains
              thisazimuth=stn_az
              thistilt=stn_el
              thisvr=rwnd(2,i)
+
+
+             vrmax = tiny(1.0)
+             vrmin = huge(1.0)
+
              vrmax=max(vrmax,thisvr)
              vrmin=min(vrmin,thisvr)
              thisvr2=rwnd(2,i)**2
              thiserr=sqrt(abs(thisvr2-thisvr**2))
+
+
+             errmax = tiny(1.0)
+             errmin = huge(1.0)
+
              errmax=max(errmax,thiserr)
              errmin=min(errmin,thiserr)
              thistime=t
@@ -725,10 +685,12 @@ contains
              caz1=clat0*caz0/clat1
              saz1=saz0*cdlon-caz0*sdlon*slat0
              corrected_azimuth=atan2(saz1,caz1)*rad2deg
+             rlat_min=this_stalat-2.5_r_kind 
+             rlon_min=this_stalon-2.5_r_kind 
              ilev=ceiling(thishgt/radar_zmesh)
              ilat=ceiling((thislat-rlat_min)/delat)
-             ilon=ceiling((thislon-rlon_min+360.0_r_kind)/(dlon_grid/mlon(ilat)))
-             iloc=mlat*(mlon(ilat)*(ilev-1)+ilon)+ilat
+             ilon=ceiling((thislon-rlon_min)/(dlon_grid/mlonx)) 
+             iloc=mlat*(mlonx*(ilev-1)+ilon)+ilat 
              bins(1,iloc,krad)=bins(1,iloc,krad)+range
              bins(2,iloc,krad)=bins(2,iloc,krad)+stn_az
              bins(3,iloc,krad)=bins(3,iloc,krad)+stn_el
@@ -736,12 +698,13 @@ contains
              bins(5,iloc,krad)=bins(5,iloc,krad)+rwnd(2,i)**2
              bins(6,iloc,krad)=bins(6,iloc,krad)+t
              ibins(iloc,krad)=ibins(iloc,krad)+1
-           end if !Xu radar_box end
+           end if !radar_box end
 	  end do
        end do          !  end do while
     end do             !  loop over blocks
     call closbf(inbufr)
-    allocate(ibins2(nthisrad,num_radars_0))
+    if (.not. allocated(ibins2)) allocate(ibins2(nthisrad,num_radars_0))
+
     ibins2=0
     call mpi_allreduce(ibins,ibins2,nthisrad*num_radars_0,mpi_integer4,mpi_sum,mpi_comm_world,ierror)
     deallocate(ibins)
@@ -793,35 +756,6 @@ contains
           write(6,*)' nrange_max=',nrange_max1
        end if
 
-!    Print out histogram of counts by ielbin to see where angles are
-      if (radar_box) then !Xu
-       do ilev=1,nlevz !Xu
-          histo_el=0 !Xu
-          do krad=1,num_radars_0 !Xu
-             do ilat=1,mlat !Xu
-                do ilon=1,mlon(ilat) !Xu
-                   iloc=mlat*(mlon(ilat)*(ilev-1)+ilon)+ilat !Xu
-                   histo_el=histo_el+ibins2(iloc,krad) !Xu
-                end do
-             end do
-          end do
-          if(rite)write(6,'(4I10)')mlat,mlon(mlat),iloc,nthisrad
-          if(rite)write(6,'(" ilev,histo_el=",i6,i20)')ilev,histo_el
-       end do !Xu
-      else !Xu
-       do ielbin=1,nelbin
-          histo_el=0
-          do krad=1,num_radars_0
-	     do iazbin=1,nazbin
-		do irbin=1,nrbin
-		   iloc=nrbin*(nazbin*(ielbin-1)+(iazbin-1))+irbin
-		   histo_el=histo_el+ibins2(iloc,krad)
-		end do
-	     end do
-	  end do
-	  if(rite)write(6,'(" ielbin,histo_el=",i6,i20)')ielbin,histo_el
-       end do
-      end if !Xu
 !   Prepare to create superobs and write out.
        open(inbufr,file='radar_supobs_from_level2',form='unformatted',iostat=iret)
        rewind inbufr
@@ -877,7 +811,7 @@ contains
 	     if(ibins2(iii,krad) < minnum) cycle
 
 	     thiscount=one_quad/real(ibins2(iii,krad),r_quad)
-           if (radar_box) then !Xu
+           if (radar_box) then 
              do i=1,6
                binsx(i)=bins_work(i,iii,1)
              end do
@@ -901,7 +835,7 @@ contains
              errmax=max(errmax,thiserr)
              errmin=min(errmin,thiserr)
              thistime=binsx(6)
-           else !Xu
+           else 
              do i=1,6
                binsx(i)=bins_work(i,iii,1)
              end do
@@ -924,7 +858,7 @@ contains
 	     errmax=max(errmax,thiserr)
 	     errmin=min(errmin,thiserr)
 	     thistime=binsx(6)
-           end if !Xu
+           end if 
 !            Compute obs height here
 !            Use 4/3rds rule to get elevation of radar beam
 !            (if local temperature, moisture available, then vertical position 
@@ -1019,7 +953,7 @@ contains
        call mpi_finalize(ierror)
        stop
     end if
-    if (radar_sites) deallocate(rtable,rsite,ruse) !Xu
+    if (radar_sites) deallocate(rtable,rsite,ruse) 
 
 end subroutine radar_bufr_read_all
 

@@ -1007,7 +1007,12 @@ subroutine read_satwnd(nread,ndata,nodata,infile,obstype,lunout,gstime,twind,sis
                  ee = amvqic(2,4) ! NOTE: GOES-R's ee is in [m/s]
 
 ! Additional QC introduced by Sharon Nebuda (for GOES-R winds from MSG proxy images)
-                 if (qifn < 80_r_kind .or. qifn > r100 )   qm=15 !reject data with low QI
+! GOES-R winds going into HWRF are not subjected to QI check 
+                 if(wrf_nmm_regional) then
+                    if (qifn > r100 )   qm=15 !No QI check
+                 else
+                    if (qifn < 80_r_kind .or. qifn > r100 )   qm=15 !reject data with low QI
+                 end if
                  if (ppb < 125.0_r_kind) qm=15 !reject data above 125hPa: Trop check in setup.f90
                  experr_norm = 10.0_r_kind - 0.1_r_kind * ee   ! introduced by Santek/Nebuda 
                  if (obsdat(4) > 0.1_r_kind) then  ! obsdat(4) is the AMV speed
@@ -1018,11 +1023,8 @@ subroutine read_satwnd(nread,ndata,nodata,infile,obstype,lunout,gstime,twind,sis
                  if (experr_norm > 0.9_r_kind) qm=15 ! reject data with EE/SPD>0.9
 
                  if(wrf_nmm_regional) then
-                    ! type 251 has been determine not suitable to be subjected to pct1 range check
-                    if(itype==240 .or. itype==245 .or. itype==246) then
-                       if (pct1 < 0.04_r_kind) qm=15
-                       if (pct1 > 0.50_r_kind) qm=15
-                    elseif (itype==251) then
+                    ! type 240, 245, 246 and 251 are  determine not suitable to be subjected to pct1 range check 
+                    if (itype==240 .or. itype==245 .or. itype==246 .or. itype==251) then
                        if (pct1 > 0.50_r_kind) qm=15
                     endif
                  else
@@ -1034,17 +1036,19 @@ subroutine read_satwnd(nread,ndata,nodata,infile,obstype,lunout,gstime,twind,sis
                  endif
 
 ! GOES-16 additional QC addopting ECMWF's approach(Katie Lean,14IWW)-start
-                if (EC_AMV_QC) then 
-                   if (qifn < 90_r_kind .or. qifn > r100 )   qm=15 ! stricter QI
-                   if (ppb < 150.0_r_kind) qm=15                   ! all high level
-                   if (itype==251 .and. ppb < 700.0_r_kind) qm=15  ! VIS
-                   if (itype==246 .and. ppb > 300.0_r_kind) qm=15  ! WVCA 
-                   dlon_earth=hdrdat(3)*deg2rad
-                   dlat_earth=hdrdat(2)*deg2rad
-                   call deter_sfc_type(dlat_earth,dlon_earth,t4dv,isflg,tsavg)
-                   if (isflg == 1 .and. ppb > 850.0_r_kind) qm=15  ! low over land
+! GOES-16 winds are not subjected to EC_AMV_QC 
+                if( .not. wrf_nmm_regional) then
+                   if (EC_AMV_QC) then 
+                     if (qifn < 90_r_kind .or. qifn > r100 )   qm=15 ! stricter QI
+                     if (ppb < 150.0_r_kind) qm=15                   ! all high level
+                     if (itype==251 .and. ppb < 700.0_r_kind) qm=15  ! VIS
+                     if (itype==246 .and. ppb > 300.0_r_kind) qm=15  ! WVCA 
+                     dlon_earth=hdrdat(3)*deg2rad
+                     dlat_earth=hdrdat(2)*deg2rad
+                     call deter_sfc_type(dlat_earth,dlon_earth,t4dv,isflg,tsavg)
+                     if (isflg == 1 .and. ppb > 850.0_r_kind) qm=15  ! low over land
+                   endif
                 endif
-
                 ! winds rejected by qc dont get used
                 if (qm == 15) usage=r100
                 if (qm == 3 .or. qm ==7) woe=woe*r1_2
@@ -1226,11 +1230,13 @@ subroutine read_satwnd(nread,ndata,nodata,infile,obstype,lunout,gstime,twind,sis
 ! Reduce OE for the GOES-R winds by half following Sharon Nebuda's work
 ! GOES-R wind are identified/recognised here by subset, but it could be done by itype or SAID
 ! After completing the evaluation of GOES-R winds, REVISE this section!!!
-            if(trim(subset) == 'NC005030' .or. trim(subset) == 'NC005031' .or. trim(subset) == 'NC005032' .or. &  
-               trim(subset) == 'NC005034' .or. trim(subset) == 'NC005039' ) then  
-               obserr=obserr/two
-            endif
-
+! HWRF error profile for GOES-16 should not be halved. 
+            if( .not. wrf_nmm_regional) then
+               if(trim(subset) == 'NC005030' .or. trim(subset) == 'NC005031' .or. trim(subset) == 'NC005032' .or. &  
+                  trim(subset) == 'NC005034' .or. trim(subset) == 'NC005039' ) then  
+                  obserr=obserr/two
+               endif
+            endif 
 !         Set usage variable
            usage = 0 
            iuse=icuse(nc)

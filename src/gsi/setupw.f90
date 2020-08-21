@@ -916,8 +916,14 @@ subroutine setupw(obsLL,odiagLL,lunin,mype,bwork,awork,nele,nobs,is,conv_diagsav
            if(presw <700.0_r_kind) error=zero    !  no visible winds above 700mb
         endif
         if(itype ==245 ) then
-           if( presw >399.0_r_kind .and. presw <801.0_r_kind) then  !GOES IR  winds
-              error=zero                          !  no data between 400-800mb
+           if(wrf_nmm_regional) then
+              if( presw >399.0_r_kind .and. presw <599.0_r_kind) then  !GOES IR winds
+                  error=zero                          !  no data between 400-600mb
+              endif
+           else
+              if( presw >399.0_r_kind .and. presw <801.0_r_kind) then  !GOES IR  winds
+                 error=zero                          !  no data between 400-800mb
+              endif
            endif
         endif
         if(itype == 252 .and. presw >499.0_r_kind .and. presw <801.0_r_kind) then  ! JMA IR winds

@@ -2504,7 +2504,7 @@ subroutine read_radar_l2rw_novadqc(ndata,nodata,lunout,obstype,sis,nobs)
 ! Initialize variables
   xscale=1000._r_kind
   xscalei=one/xscale
-  max_rrr=nint(100000.0_r_kind*xscalei)
+  max_rrr=nint(200000.0_r_kind*xscalei)
   nboxmax=1
 
   kx0=22500
@@ -2767,23 +2767,23 @@ subroutine read_radar_l2rw_novadqc(ndata,nodata,lunout,obstype,sis,nobs)
 
 end subroutine read_radar_l2rw_novadqc
 
-!!!!!!!!!!!!!!! Xu added for l2rw thinning !!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!! Added for l2rw thinning !!!!!!!!!!!!!!!
 subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
   use kinds, only: r_kind,r_single,r_double,i_kind,i_byte
   use constants, only: zero,half,one,two,deg2rad,rearth,rad2deg,r1000,r100,r400
   use qcmod, only: erradar_inflate
   use oneobmod, only: oneobtest,learthrel_rw
   use gsi_4dvar, only: l4dvar,l4densvar,winlen,time_4dvar
-  use gridmod, only: regional,nlat,nlon,tll2xy,rlats,rlons,rotate_wind_ll2xy,nsig !Xu
-  use obsmod, only: doradaroneob,oneoblat,oneoblon,oneobheight,oneobradid,time_offset !Xu
-  use mpeu_util, only: gettablesize,gettable !Xu
+  use gridmod, only: regional,nlat,nlon,tll2xy,rlats,rlons,rotate_wind_ll2xy,nsig 
+  use obsmod, only: doradaroneob,oneoblat,oneoblon,oneobheight,oneobradid,time_offset 
+  use mpeu_util, only: gettablesize,gettable 
   use convinfo, only: nconvtype,ncmiter,ncgroup,ncnumgrp,icuse,ioctype
   use deter_sfc_mod, only: deter_sfc2
   use mpimod, only: npe
-  use read_l2bufr_mod !,only:radar_sites,elev_angle_max,del_time,range_max !Xu
-  use constants, only: eccentricity,somigliana,grav_ratio,grav,semi_major_axis,flattening,grav_equator !Xu
-  use obsmod,only: radar_no_thinning,iadate !Xu
-  use convthin, only: make3grids,map3grids !Xu
+  use read_l2bufr_mod  
+  use constants, only: eccentricity,somigliana,grav_ratio,grav,semi_major_axis,flattening,grav_equator 
+  use obsmod,only: radar_no_thinning,iadate 
+  use convthin, only: make3grids,map3grids 
 
   implicit none
 
@@ -2794,7 +2794,7 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
   integer(i_kind) ,intent(in   ) :: lunout
   integer(i_kind) ,intent(inout) :: ndata,nodata!,nread
   integer(i_kind),dimension(npe) ,intent(inout) :: nobs
-  real(r_kind),dimension(nlat,nlon,nsig),intent(in):: hgtl_full !Xu
+  real(r_kind),dimension(nlat,nlon,nsig),intent(in):: hgtl_full 
 
 ! Declare local parameters
   integer(i_kind),parameter:: maxlevs=1500
@@ -2811,9 +2811,9 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
   real(r_kind),parameter:: r50000 = 50000.0_r_kind
   real(r_kind),parameter:: r89_5  = 89.5_r_kind
   real(r_kind),parameter:: four_thirds = 4.0_r_kind / 3.0_r_kind
-  integer(i_kind),parameter:: n_gates_max=4000  !Xu
-  real(r_double),parameter:: r1e5_double = 1.0e5_r_double !Xu
-  real(r_kind),parameter:: rinv60 = 1.0_r_kind/60.0_r_kind !Xu
+  integer(i_kind),parameter:: n_gates_max=4000  
+  real(r_double),parameter:: r1e5_double = 1.0e5_r_double 
+  real(r_kind),parameter:: rinv60 = 1.0_r_kind/60.0_r_kind 
   logical good,outside,good0
 
   character(30) outmessage
@@ -2851,38 +2851,38 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
   real(r_kind) this_stalat,this_stalon,this_stahgt,thistime,thislat,thislon
   real(r_kind) thishgt,thisvr,corrected_azimuth,thiserr,corrected_tilt
   integer(i_kind) nsuper2_in,nsuper2_kept
-  real(r_kind) errzmax,ddx,ddy,ddz !Xu
-  character(len=*),parameter:: tbname='SUPEROB_RADAR::' !Xu
-  integer(i_kind) ntot,radar_true,radar_count,inbufr,lundx,idups,idate,n_gates,levs !Xu
-  integer(i_kind) idate5(5) !Xu
-  integer(i_kind) nminref,nminthis,nrange_max !Xu
+  real(r_kind) errzmax,ddx,ddy,ddz 
+  character(len=*),parameter:: tbname='SUPEROB_RADAR::' 
+  integer(i_kind) ntot,radar_true,radar_count,inbufr,lundx,idups,idate,n_gates,levs 
+  integer(i_kind) idate5(5) 
+  integer(i_kind) nminref,nminthis,nrange_max 
   integer(i_kind) nobs_in,nradials_in,nradials_fail_angmax,nradials_fail_time,nradials_fail_elb,ireadmg,ireadsb
-!Xu
-  integer(i_kind) nobs_badvr,nobs_badsr,j !Xu
-  real(r_kind) rlon0,clat0,slat0,this_stalatr,thisrange,thisazimuth,thistilt,thisvr2 !Xu
-  character(20) infile !Xu
-  real(r_kind) rad_per_meter,erad,ddiffmin,distfact !Xu
-  character(len=256),allocatable,dimension(:):: rtable !Xu
-  character(4),allocatable,dimension(:):: rsite !Xu
-  integer,allocatable,dimension(:):: ruse!Xu
-  character(8) chdr,chdr2,subset !Xu
-  real(r_double) rdisttest(n_gates_max),hdr(10),hdr2(12),rwnd0(3,n_gates_max) !Xu
-  character(4) stn_id !Xu
-  equivalence (chdr2,hdr2(1)) !Xu
+
+  integer(i_kind) nobs_badvr,nobs_badsr,j 
+  real(r_kind) rlon0,clat0,slat0,this_stalatr,thisrange,thisazimuth,thistilt,thisvr2 
+  character(20) infile 
+  real(r_kind) rad_per_meter,erad,ddiffmin,distfact 
+  character(len=256),allocatable,dimension(:):: rtable 
+  character(4),allocatable,dimension(:):: rsite 
+  integer,allocatable,dimension(:):: ruse
+  character(8) chdr,chdr2,subset 
+  real(r_double) rdisttest(n_gates_max),hdr(10),hdr2(12),rwnd0(3,n_gates_max) 
+  character(4) stn_id 
+  equivalence (chdr2,hdr2(1)) 
   real(r_kind) stn_lat,stn_lon,stn_hgt,stn_az,stn_el,t,range,vrmax,vrmin,aactual,a43,b,c,selev0,celev0,thistiltr,epsh,h,ha,rlonloc,rlatloc
-!Xu
-  real(r_kind) celev,selev,gamma,thisazimuthr,rlonglob,rlatglob,clat1,caz0,saz0,cdlon,sdlon,caz1,saz1 !Xu
-  real(r_kind):: relm,srlm,crlm,sph,cph,cc,anum,denom !Xu
-  real(r_kind) :: rmesh,xmesh,zmesh,dx,dy,dx1,dy1,w00,w01,w10,w11 !Xu
-  real(r_kind), allocatable, dimension(:) :: zl_thin !Xu
-  integer(i_kind) :: ithin,zflag,nlevz,icntpnt,klon1,klat1,kk,klatp1,klonp1 !Xu
-  real(r_kind),dimension(nsig):: hges,zges !Xu
-  real(r_kind) sin2,termg,termr,termrg,zobs !Xu
-  integer(i_kind) ntmp,iout,iiout,ntdrvr_thin2 !Xu
-  real(r_kind) crit1,timedif !Xu
-  integer(i_kind) maxout,maxdata !Xu
-  logical :: luse !Xu
-  integer(i_kind) iyref,imref,idref,ihref,nout !Xu
+
+  real(r_kind) celev,selev,gamma,thisazimuthr,rlonglob,rlatglob,clat1,caz0,saz0,cdlon,sdlon,caz1,saz1 
+  real(r_kind):: relm,srlm,crlm,sph,cph,cc,anum,denom 
+  real(r_kind) :: rmesh,xmesh,zmesh,dx,dy,dx1,dy1,w00,w01,w10,w11 
+  real(r_kind), allocatable, dimension(:) :: zl_thin 
+  integer(i_kind) :: ithin,zflag,nlevz,icntpnt,klon1,klat1,kk,klatp1,klonp1 
+  real(r_kind),dimension(nsig):: hges,zges 
+  real(r_kind) sin2,termg,termr,termrg,zobs 
+  integer(i_kind) ntmp,iout,iiout,ntdrvr_thin2 
+  real(r_kind) crit1,timedif 
+  integer(i_kind) maxout,maxdata 
+  logical :: luse 
+  integer(i_kind) iyref,imref,idref,ihref,nout 
 
   integer(i_kind),allocatable,dimension(:):: isort
 
@@ -2925,7 +2925,7 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
   cdata_all=zero
   xscale=1000._r_kind
   xscalei=one/xscale
-  max_rrr=nint(1000000.0_r_kind*xscalei) !Xu
+  max_rrr=nint(1000000.0_r_kind*xscalei) 
   nboxmax=1
   kx0=22500
   nmrecs=0
@@ -3030,13 +3030,13 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
       end if
       nobs_in=nobs_in+n_gates
       stn_id=chdr2
-      radar_true=0 !Xu
-      if (radar_sites) then !Xu
-       do i=1,radar_count !Xu
-         if (trim(stn_id) .eq. trim(rsite(i)) .and. ruse(i) .eq. 1 ) radar_true=1 !Xu
-       end do !Xu
-       if (radar_true == 0) cycle !Xu
-      end if !Xu
+      radar_true=0 
+      if (radar_sites) then 
+       do i=1,radar_count 
+         if (trim(stn_id) .eq. trim(rsite(i)) .and. ruse(i) .eq. 1 ) radar_true=1 
+       end do 
+       if (radar_true == 0) cycle 
+      end if 
       stn_lat=hdr2(2)
       stn_lon=hdr2(3)
       stn_hgt=hdr2(4)+hdr2(5)
@@ -3076,7 +3076,7 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
         vrmin=min(vrmin,thisvr)
         thisvr2=rwnd0(2,i)**2
 !        thiserr=sqrt(abs(thisvr2-thisvr**2))
-        thiserr=5.0_r_kind ! Xu force all obs error to 2.
+        thiserr=5.0_r_kind 
         errmax=max(errmax,thiserr)
         errmin=min(errmin,thiserr)
         thistime=t
@@ -3211,7 +3211,6 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
           azm=azm_earth
         end if
 !####################       Data thinning       ###################
-! Xu from Yongming
         icntpnt=icntpnt+1
         ithin=1 !number of obs to keep per grid box
         if(radar_no_thinning) then
@@ -3250,7 +3249,7 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
           if (l4dvar) then
             timedif = zero
           else
-            timedif=abs(t4dvo-toff) !don't know about this
+            timedif=abs(t4dvo-toff) 
           endif
           crit1 = timedif/r6+half
           call map3grids(1,zflag,zl_thin,nlevz,dlat_earth,dlon_earth,&
@@ -3317,6 +3316,10 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
 
 !    If data is good, load into output array
         if(good) then
+          
+          usage = zero
+          if(icuse(ikx) < 0)usage=r100
+
           nsuper2_kept=nsuper2_kept+1
           cdata(1) = error             ! wind obs error (m/s)
           cdata(2) = dlon              ! grid relative longitude
@@ -3329,7 +3332,7 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
           cdata(9) = tiltangle         ! tilt angle (radians)
           cdata(10)= staheight         ! station elevation (m)
           cdata(11)= rstation_id       ! station id
-          cdata(12)= icuse(ikx)        ! usage parameter
+          cdata(12)= usage             ! usage parameter
           cdata(13)= idomsfc           ! dominate surface type
           cdata(14)= skint             ! skin temperature
           cdata(15)= ff10              ! 10 meter wind factor
@@ -3370,5 +3373,5 @@ subroutine read_radar_l2rw(ndata,nodata,lunout,obstype,sis,nobs,hgtl_full)
   return
 
 end subroutine read_radar_l2rw
-!!!!!!!!!!!!!!! Xu added for l2rw thinning !!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!! End added for l2rw thinning !!!!!!!!!!!!!!!
 
