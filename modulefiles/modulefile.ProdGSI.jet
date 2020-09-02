@@ -1,0 +1,43 @@
+#%Module######################################################################
+##                                                       Russ.Treadon@noaa.gov
+##                                                           NOAA/NWS/NCEP/EMC
+## GDAS_ENKF v6.2.3
+##_____________________________________________________
+#proc ModulesHelp { } {
+#puts stderr "Set environment veriables for GSI build with CMake"
+#puts stderr "This module initializes the environment "
+#puts stderr "for the Intel Compiler Suite $version\n"
+#}
+#module-whatis " GDAS_ENKF whatis description"
+#
+#
+
+module load intel/15.0.3.187
+module load impi
+#
+module load szip/2.1
+module load hdf5/1.8.9
+module load netcdf4/4.2.1.1
+
+export COREPATH=/lfs4/HFIP/hfv3gfs/gwv/l0530/lib
+export NCEPLIBS=$COREPATH
+module use $NCEPLIBS/modulefiles
+
+export FFLAGS="-qopenmp"
+export LDFLAGS="-qopenmp"
+module load bacio-intel-sandybridge/2.0.2
+module load crtm-intel-sandybridge/2.2.5
+module load bufr-intel-sandybridge/11.1.0
+module load nemsio-intel-sandybridge/2.2.2
+module load sp-intel-sandybridge/2.0.2
+module load w3emc-intel-sandybridge/2.2.0
+module load w3nco-intel-sandybridge/2.0.6
+module load sigio-intel-sandybridge/2.0.1
+module load sfcio-intel-sandybridge/1.0.0
+
+module use /home/George.Vandenberghe/t1/l1025/lib/modulefiles
+#module load hdf5
+#module load netcdf
+
+export NETCDF=${NETCDF4}
+export NETCDF_DIR=${NETCDF4}
