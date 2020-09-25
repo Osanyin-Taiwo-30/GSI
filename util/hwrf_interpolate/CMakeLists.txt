@@ -11,7 +11,7 @@ set(fortran_srcs
   wrf_nmm_interpolate.f90
   wrf_interpolate_main.f90)
 
-set(exe_name hwrf_interpolate.exe)
+set(exe_name hwrf_interpolate.x)
 set(exec_dir ${CMAKE_SOURCE_DIR}/exec)
 set(mpeu_util_lib ${CMAKE_SOURCE_DIR}/build/src/gsi/CMakeFiles/gsilib_shrd.dir/mpeu_util.F90.o)
 
