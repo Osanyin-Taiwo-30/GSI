@@ -35,6 +35,7 @@ target_link_libraries(
   ${mpeu_util_lib}
   ${GSILIB} 
   ${GSISHAREDLIB} 
+  ${MPI_Fortran_LIBRARIES}
   ${NETCDF_LIBRARIES_F90} 
   ${NETCDF_LIBRARIES}  
   ${HDF5_HL_LIBRARIES} 
