@@ -15,9 +15,9 @@
 module load intel/15.0.3.187
 module load impi
 #
-module load szip/2.1
-module load hdf5/1.8.9
-module load netcdf4/4.2.1.1
+module load pnetcdf/1.7.0
+module load hdf5/1.10.4
+module load netcdf/4.6.1
 
 export COREPATH=/lfs4/HFIP/hfv3gfs/gwv/l0530/lib
 export NCEPLIBS=$COREPATH
