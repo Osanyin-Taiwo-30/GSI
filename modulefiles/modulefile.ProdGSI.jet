@@ -15,8 +15,10 @@
 module load intel/18.0.5.274
 module load impi
 #
-module load szip/2.1
-module load hdf5/1.8.9
+module load hdf5parallel/1.10.6
+module load pnetcdf/1.7.0
+module load netcdf-hdf5parallel/4.7.4
+module load  cmake/3.16.1
 
 export COREPATH=/lfs4/HFIP/hfv3gfs/gwv/l0530/lib
 export NCEPLIBS=$COREPATH
@@ -35,5 +37,3 @@ module load sigio-intel-sandybridge/2.0.1
 module load sfcio-intel-sandybridge/1.0.0
 module load ip-intel-sandybridge/3.0.0
 
-
-module load netcdfp/4.7.4
