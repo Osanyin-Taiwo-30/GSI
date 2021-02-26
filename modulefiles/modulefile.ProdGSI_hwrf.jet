@@ -38,7 +38,7 @@
 #hwrf# Commented out first COREPATH defintions since it is 
 # overwritten by second one under gwv anyway.
 #export COREPATH=/lfs3/projects/hfv3gfs/nwprod/lib
-export COREPATH=/lfs4/HFIP/hfv3gfs/gwv/l0530/lib               
+export COREPATH=/mnt/lfs4/HFIP/hfv3gfs/gwv/l0716/lib 
 export NCEPLIBS=$COREPATH
 module use $NCEPLIBS/modulefiles
 
@@ -47,7 +47,7 @@ export LDFLAGS="-qopenmp"
 module load ip-intel-sandybridge/3.0.0
 module load bacio-intel-sandybridge/2.0.2
 module load crtm-intel-sandybridge/2.2.5
-module load bufr-intel-sandybridge/11.1.0
+module load bufr-intel-sandybridge/11.3.1
 module load nemsio-intel-sandybridge/2.2.2
 module load sp-intel-sandybridge/2.0.2
 module load w3emc-intel-sandybridge/2.2.0
