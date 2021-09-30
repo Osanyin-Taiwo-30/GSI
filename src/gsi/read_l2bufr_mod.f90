@@ -515,7 +515,8 @@ contains
      dgv=delat*half
      mlat=max(2,mlat);mlonx=max(2,mlonx)
      nlevz=nint(15000.0_r_kind/radar_zmesh)
-     nthisrad=(nlevz+1)*mlat*mlonx
+!Xu     nthisrad=(nlevz+1)*mlat*mlonx
+     nthisrad=nlevz*mlat*mlonx
      nthisbins=6*nthisrad
     end if
 ! reopen and reread the file for data this time
@@ -602,6 +603,7 @@ contains
 		nobs_badsr=nobs_badsr+1
 		cycle
 	     end if
+           if (.not.radar_box) then 
 	     irbin=ceiling(range*rdelr)
 	     if(irbin<1) then
 		nobs_lrbin=nobs_lrbin+1
@@ -611,7 +613,6 @@ contains
 		nobs_hrbin=nobs_hrbin+1
 		cycle
 	     end if
-           if (.not.radar_box) then 
 	     iloc=nrbin*(nazbin*(ielbin-1)+(iazbin-1))+irbin
 	     bins(1,iloc,krad)=bins(1,iloc,krad)+range
 	     bins(2,iloc,krad)=bins(2,iloc,krad)+stn_az
@@ -690,7 +691,15 @@ contains
              ilev=ceiling(thishgt/radar_zmesh)
              ilat=ceiling((thislat-rlat_min)/delat)
              ilon=ceiling((thislon-rlon_min)/(dlon_grid/mlonx)) 
-             iloc=mlat*(mlonx*(ilev-1)+ilon)+ilat 
+	     if(ilev<1 .or. ilat<1 .or. ilon<1) then
+		nobs_lrbin=nobs_lrbin+1
+		cycle
+	     end if
+	     if(ilev>nlevz .or. ilat>mlat .or. ilon>mlonx) then
+		nobs_hrbin=nobs_hrbin+1
+		cycle
+	     end if
+             iloc=mlat*(mlonx*(ilev-1)+(ilon-1))+ilat 
              bins(1,iloc,krad)=bins(1,iloc,krad)+range
              bins(2,iloc,krad)=bins(2,iloc,krad)+stn_az
              bins(3,iloc,krad)=bins(3,iloc,krad)+stn_el
